@@ -1,9 +1,4 @@
 
-// improvements:
-/*
-    - keyboard buffer, to allow multiple presses per cycle
-*/
-
 var timer;                                              // move timer
 let canvasSize = [600,400];                             // size of playing field
 let headSize = [20, 20];                                // size of the snakes head/body segment
@@ -17,40 +12,25 @@ var scoreSpan = document.getElementById("score");       // score span to update 
 var ctx = doc.getContext("2d");                         // canvas context
 
 var segments = [];                                      // array of blocks to be drawn
+var directionBuffer = [];                               // buffer to store directions
 
 window.addEventListener("keydown", function (event) {   // keyboard event listner
     if (event.defaultPrevented) {
         return;
     }
     switch (event.key) {
-        case "ArrowUp": {
-            if (snakeDirection != 2) {                  // don't let the snake turn back on itself
-                snakeDirection = 1; 
-            }
-            break;
-        }
-        case "ArrowDown": {
-            if (snakeDirection != 1) {
-                snakeDirection = 2; 
-            }
-            break;
-        }
-        case "ArrowLeft": {
-            if (snakeDirection != 4) {
-                snakeDirection = 3;
-            } 
-            break;
-        }
-        case "ArrowRight": {
-            if (snakeDirection != 3) {
-                snakeDirection = 4; 
-            }
-            break;
-        }
+        case "ArrowUp": keyPress(1); break;
+        case "ArrowDown": keyPress(2); break;
+        case "ArrowLeft": keyPress(3); break;
+        case "ArrowRight": keyPress(4); break;
         default: return;
     }
     event.preventDefault();
 }, true);
+
+function keyPress(key) {
+    directionBuffer.push(key);
+}
 
 function startGame() {
     if (timer != null) {
@@ -75,11 +55,40 @@ function stopGame() {
 function drawBox() {
     var xOffset = 0;
     var yOffset = 0
-    switch (snakeDirection) {
-        case 1: yOffset = -headSize[1]; break;  // up
-        case 2: yOffset = headSize[1]; break;   // down
-        case 3: xOffset = -headSize[0]; break;  // left
-        case 4: xOffset = headSize[0]; break;   // right
+    let direction = directionBuffer.shift();
+    if (direction == null) {
+        direction = snakeDirection;
+    }
+
+    switch (direction) {
+        case 1: {
+            if (direction != 2) {
+                yOffset = -headSize[1]; 
+                snakeDirection = direction;
+                break;  // up
+            }
+        }
+        case 2: {
+            if (direction != 1) {
+                yOffset = headSize[1]; 
+                snakeDirection = direction;
+                break;   // down
+            }
+        }
+        case 3: {
+            if (direction != 4) {
+                xOffset = -headSize[0]; 
+                snakeDirection = direction;
+                break;  // left
+            }
+        }
+        case 4: {
+            if (direction != 3) {
+                xOffset = headSize[0]; 
+                snakeDirection = direction;
+                break;   // right
+            }
+        }
     }
     
     headPosition[0] += xOffset; // new X
@@ -114,8 +123,10 @@ function outOfBounds() {
     } else {
         if (segments.length > 1) {
             for (var i = 1; i < segments.length-1; i++) {
-                if (headPosition[0] == segments[i][0] && headPosition[1] == segments[i][1])
+                if (headPosition[0] == segments[i][0] && headPosition[1] == segments[i][1]) {
+                    console.log("Dir: " + snakeDirection);
                     return true;
+                }
             }
         }
     }
