@@ -151,7 +151,9 @@ function resetCanvas() {
 
 function gameOver() {
     stopGame();
+
     ctx.fillStyle = fontColour;
+    ctx.fillRect(headPosition[0], headPosition[1], headSize[0], headSize[1]);
     ctx.font = "20px Monospace";
     ctx.fillText("GAME OVER", headSize[0], headSize[1]*2);
 }
