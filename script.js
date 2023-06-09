@@ -121,12 +121,10 @@ function drawFood() {
     let fx = Math.floor(Math.random() * ((canvasSize[0] - (headSize[0]*2))/headSize[0]));
     let fy = Math.floor(Math.random() * ((canvasSize[1] - (headSize[1]*2))/headSize[1]));
     foodPosition = [fx*headSize[0], fy*headSize[1]];
-    if (segments.length > 1) {
-        for (var i = 1; i < segments.length-1; i++) {
-            if (foodPosition[0] == segments[i][0] && foodPosition[1] == segments[i][1]) {
-                drawFood();
-                return;
-            }
+    for (var i = 0; i < segments.length-1; i++) {
+        if (foodPosition[0] == segments[i][0] && foodPosition[1] == segments[i][1]) {
+            drawFood();
+            return;
         }
     }
     ctx.fillStyle = foodColour;
