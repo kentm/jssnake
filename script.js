@@ -14,6 +14,12 @@ var ctx = doc.getContext("2d");                         // canvas context
 var segments = [];                                      // array of blocks to be drawn
 var directionBuffer = [];                               // buffer to store directions
 
+const snakeColour = "#000";
+const foodColour = "#0F0";
+const backgroundColour = "#FFF";
+const fontColour = "#F00";
+const snakeSpeed = 100;                                 // lower == faster
+
 window.addEventListener("keydown", function (event) {   // keyboard event listner
     if (event.defaultPrevented) {
         return;
@@ -29,27 +35,26 @@ window.addEventListener("keydown", function (event) {   // keyboard event listne
 }, true);
 
 function keyPress(key) {
-    directionBuffer.push(key);
+    directionBuffer.push(key);                          // add the key pressed to the direction buffer
 }
 
 function startGame() {
-    if (timer != null) {
+    if (timer != null) { 
         return;
     }
+
     resetCanvas();
     drawFood();
-    console.log("Start Clicked");
-    timer = setInterval(
+
+    timer = setInterval(                                // start timer
         drawBox,
-        100
+        snakeSpeed
     );
 }
 
 function stopGame() {
-    console.log("Stop Clicked");
-    clearInterval(timer);
+    clearInterval(timer);                               // clear timer
     timer = null;
-    resetCanvas();
 }
 
 function drawBox() {
@@ -58,62 +63,38 @@ function drawBox() {
     let direction = directionBuffer.shift();
     if (direction == null) {
         direction = snakeDirection;
+    } else {
+        snakeDirection = direction;
     }
 
     switch (direction) {
-        case 1: {
-            if (direction != 2) {
-                yOffset = -headSize[1]; 
-                snakeDirection = direction;
-                break;  // up
-            }
-        }
-        case 2: {
-            if (direction != 1) {
-                yOffset = headSize[1]; 
-                snakeDirection = direction;
-                break;   // down
-            }
-        }
-        case 3: {
-            if (direction != 4) {
-                xOffset = -headSize[0]; 
-                snakeDirection = direction;
-                break;  // left
-            }
-        }
-        case 4: {
-            if (direction != 3) {
-                xOffset = headSize[0]; 
-                snakeDirection = direction;
-                break;   // right
-            }
-        }
+        case 1: yOffset = -headSize[1]; break;  // up
+        case 2: yOffset = headSize[1]; break;   // down
+        case 3: xOffset = -headSize[0]; break;  // left
+        case 4: xOffset = headSize[0]; break;   // right
     }
     
     headPosition[0] += xOffset; // new X
     headPosition[1] += yOffset; // new Y
 
     if (outOfBounds()) {
-        console.log("Out of bounds");
         gameOver();
         return;
     }    
 
     segments.unshift([headPosition[0], headPosition[1]]);
     if (headPosition[0] == foodPosition[0] && headPosition[1] == foodPosition[1]) {
-        gotFood(); // got some food, extend the snake
+        gotFood();                                          // got some food, extend the snake
     } else {
-        // no food, don't extend the snake
-        var removeMe = segments.pop();
-        ctx.fillStyle = "#FFF";
+        var removeMe = segments.pop();                      // no food, don't extend the snake
+        ctx.fillStyle = backgroundColour;
         ctx.fillRect(removeMe[0], removeMe[1], headSize[0], headSize[1]);    
     }
 
     // add new head position
-    ctx.fillStyle = "#000";
+    ctx.fillStyle = snakeColour;
     ctx.fillRect(segments[0][0], segments[0][1], headSize[0], headSize[1]);
-    ctx.strokeStyle = "#FFF";
+    ctx.strokeStyle = backgroundColour;
     ctx.strokeRect(segments[0][0], segments[0][1], headSize[0], headSize[1]);
 }
 
@@ -121,12 +102,9 @@ function outOfBounds() {
     if (headPosition[0] < 0 || headPosition[1] < 0 || headPosition[0] + headSize[0] > canvasSize[0] || headPosition[1] + headSize[1] > canvasSize[1]) {
         return true;
     } else {
-        if (segments.length > 1) {
-            for (var i = 1; i < segments.length-1; i++) {
-                if (headPosition[0] == segments[i][0] && headPosition[1] == segments[i][1]) {
-                    console.log("Dir: " + snakeDirection);
-                    return true;
-                }
+        for (var i = 0; i < segments.length-1; i++) {
+            if (headPosition[0] == segments[i][0] && headPosition[1] == segments[i][1]) {
+                return true;
             }
         }
     }
@@ -146,40 +124,36 @@ function drawFood() {
     if (segments.length > 1) {
         for (var i = 1; i < segments.length-1; i++) {
             if (foodPosition[0] == segments[i][0] && foodPosition[1] == segments[i][1]) {
-                console.log("food collision");
                 drawFood();
                 return;
             }
         }
     }
-    ctx.fillStyle = "#0F0";
+    ctx.fillStyle = foodColour;
     ctx.fillRect(foodPosition[0], foodPosition[1], headSize[0], headSize[1]);
 }
 
 function resetCanvas() {
-    console.log("Reset Canvas");
+    snakeDirection = 4;
+    scoreSpan.innerHTML = score = 0;
+
     doc.width = canvasSize[0];
     doc.height = canvasSize[1];
     options.style.width = canvasSize[0];
 
-    score = 0;
-    scoreSpan.innerHTML = score;
     headPosition[0] = canvasSize[0]/2;
     headPosition[1] = canvasSize[1]/2;
 
     segments = [];
     segments.push([headPosition[0],headPosition[1]]);
 
-    ctx.fillStyle = "#FFF";
+    ctx.fillStyle = backgroundColour;
     ctx.fillRect(0, 0, canvasSize[0], canvasSize[1]);
 }
 
 function gameOver() {
     stopGame();
-    console.log("Game Over");
-    ctx.fillStyle = "#FFF";
-    ctx.fillRect(0, 0, canvasSize[0], canvasSize[1]);
-    ctx.fillStyle = "#F00";
+    ctx.fillStyle = fontColour;
     ctx.font = "20px Monospace";
     ctx.fillText("GAME OVER", headSize[0], headSize[1]*2);
 }
