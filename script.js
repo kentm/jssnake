@@ -177,9 +177,9 @@ function resetCanvas() {
 function gameOver() {
     stopGame();
     console.log("Game Over");
-    ctx.fillStyle = "#F00";
-    ctx.fillRect(0, 0, canvasSize[0], canvasSize[1]);
     ctx.fillStyle = "#FFF";
+    ctx.fillRect(0, 0, canvasSize[0], canvasSize[1]);
+    ctx.fillStyle = "#F00";
     ctx.font = "20px Monospace";
     ctx.fillText("GAME OVER", headSize[0], headSize[1]*2);
 }
